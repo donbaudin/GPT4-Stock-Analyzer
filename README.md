@@ -1,92 +1,87 @@
-# GPT4-Stock-Analyzer
-GPT-4 powered Python tool that generates investment-grade stock analysis using real-time market data.
+# GPT4O Stock Analyzer
 
-import yfinance as yf
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
-from datetime import datetime
+A comprehensive stock analysis tool that combines financial data analysis, news sentiment analysis, and social media insights to provide detailed stock comparisons and portfolio analysis.
 
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("❌ OPENAI_API_KEY not found. Check your .env file.")
-client = OpenAI(api_key=api_key)
+## Features
 
-def get_stock_summary(ticker_symbol):
-    ticker = yf.Ticker(ticker_symbol)
-    info = ticker.info
+- **Stock Comparison**: Compare multiple stocks with detailed financial metrics
+- **Portfolio Analysis**: Analyze your investment portfolio with sector breakdowns and performance metrics
+- **News Analysis**: Track and analyze news sentiment for stocks
+- **Social Media Integration**: Monitor social media sentiment from Twitter and Reddit
+- **Data Export**: Export analysis results in multiple formats (JSON, MD, PNG)
+- **Interactive CLI**: User-friendly command-line interface with rich formatting
 
-    # Error handling: some symbols return empty or bad data
-    if not info or "longName" not in info:
-        return None
+## Installation
 
-    name = info.get("longName", "N/A")
-    sector = info.get("sector", "N/A")
-    market_cap = info.get("marketCap", "N/A")
-    pe_ratio = info.get("trailingPE", "N/A")
-    price = info.get("currentPrice", "N/A")
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/gpt4o_stock_analyzer.git
+cd gpt4o_stock_analyzer
+```
 
-    return {
-        "name": name,
-        "sector": sector,
-        "market_cap": market_cap,
-        "pe_ratio": pe_ratio,
-        "price": price
-    }
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-def generate_analysis(summary):
-    prompt = f"""
-    Provide a concise investment analysis for the following stock based on its key data:
+3. Set up environment variables:
+Create a `.env` file in the project root with the following variables:
+```
+OPENAI_API_KEY=your_openai_api_key
+TWITTER_API_KEY=your_twitter_api_key
+TWITTER_API_SECRET=your_twitter_api_secret
+REDDIT_CLIENT_ID=your_reddit_client_id
+REDDIT_CLIENT_SECRET=your_reddit_client_secret
+```
 
-    Company: {summary['name']}
-    Sector: {summary['sector']}
-    Market Cap: {summary['market_cap']}
-    Price: {summary['price']}
-    P/E Ratio: {summary['pe_ratio']}
+## Usage
 
-    Mention potential strengths, weaknesses, and whether this stock appears undervalued or overvalued.
-    Limit the response to 150 words.
-    """
+### Basic Stock Comparison
+```bash
+python gpt4o_stock_comparator.py compare AAPL MSFT GOOGL
+```
 
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are a financial analyst."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.7,
-        max_tokens=300
-    )
+### Portfolio Analysis
+```bash
+python gpt4o_stock_comparator.py portfolio --stocks AAPL MSFT GOOGL --weights 0.4 0.3 0.3
+```
 
-    return response.choices[0].message.content
+### News Analysis
+```bash
+python gpt4o_stock_comparator.py news AAPL --days 7
+```
 
-if __name__ == "__main__":
-    tickers = input("Enter one or more stock ticker symbols (comma-separated): ").upper().split(",")
+### Social Media Analysis
+```bash
+python gpt4o_stock_comparator.py social AAPL --platform twitter
+```
 
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    output_file = f"gpt4_stock_analysis_{timestamp}.txt"
+## Project Structure
 
-    with open(output_file, "w") as f:
-        for ticker in tickers:
-            ticker = ticker.strip()
-            print(f"\n🔍 Analyzing {ticker}...")
-            summary = get_stock_summary(ticker)
+- `gpt4o_stock_comparator.py`: Main script for stock comparison and analysis
+- `analysis.py`: Core analysis functions
+- `news.py`: News gathering and sentiment analysis
+- `social.py`: Social media data collection and analysis
+- `export.py`: Data export functionality
+- `cli.py`: Command-line interface implementation
+- `utils.py`: Utility functions
+- `tests/`: Test suite
 
-            if summary is None:
-                error_msg = f"⚠️ Could not fetch valid data for ticker: {ticker}\n"
-                print(error_msg)
-                f.write(error_msg)
-                continue
+## Contributing
 
-            print("📊 Stock Summary:", summary)
-            analysis = generate_analysis(summary)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-            print("\n🤖 GPT-4 Investment Analysis:\n")
-            print(analysis)
+## License
 
-            f.write(f"===== {ticker} Analysis =====\n")
-            f.write(f"Stock Summary: {summary}\n")
-            f.write(f"GPT-4 Analysis:\n{analysis}\n\n")
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-    print(f"\n📁 All analyses saved to: {output_file}")
+## Acknowledgments
+
+- OpenAI for GPT-4 integration
+- Yahoo Finance for financial data
+- Twitter and Reddit APIs for social media data
+- All contributors who have helped improve this project
